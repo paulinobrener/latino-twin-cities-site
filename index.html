@@ -29,7 +29,6 @@
   a { color: inherit; }
   .wrap{ max-width:1080px; margin:0 auto; padding:0 20px; }
 
-  /* Header */
   header{ border-bottom:1px solid var(--line); background:var(--paper); position:sticky; top:0; z-index:20; backdrop-filter: blur(6px); }
   .headbar{ display:flex; align-items:center; justify-content:space-between; padding:16px 20px; max-width:1080px; margin:0 auto; }
   .brand{ display:flex; align-items:baseline; gap:10px; }
@@ -40,7 +39,6 @@
   .lang-toggle button{ border:none; background:transparent; padding:7px 14px; cursor:pointer; color:var(--ink); font-family:inherit; }
   .lang-toggle button.active{ background:var(--ink); color:var(--paper); }
 
-  /* Hero */
   .hero{ padding:52px 20px 30px; max-width:1080px; margin:0 auto; }
   .hero h2{ font-family:var(--font-display); font-size:clamp(32px,5vw,50px); line-height:1.05; margin:0 0 14px; max-width:16ch; font-weight:600;}
   .hero p{ max-width:52ch; color:#4a5459; font-size:16px; }
@@ -49,7 +47,6 @@
   .btn-solid{ background:var(--ink); color:var(--paper); }
   .btn-outline{ background:transparent; color:var(--ink); }
 
-  /* Filter bar */
   .filters{ background:var(--paper-2); border-top:1px solid var(--line); border-bottom:1px solid var(--line); position:sticky; top:65px; z-index:15;}
   .filters .wrap{ display:flex; gap:8px; padding:12px 20px; overflow-x:auto; scrollbar-width:none; }
   .filters .wrap::-webkit-scrollbar{ display:none; }
@@ -59,14 +56,12 @@
   }
   .chip-btn.active{ background:var(--teal); color:var(--paper); border-color:var(--teal); }
 
-  /* Section labels */
   .section{ padding:34px 20px 6px; max-width:1080px; margin:0 auto; }
   .section-head{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:16px; border-bottom:1px solid var(--line); padding-bottom:10px;}
   .eyebrow{ font-family:var(--font-mono); font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--coral); }
   .section h3{ font-family:var(--font-display); font-size:24px; margin:2px 0 0; font-weight:600; }
   .count{ font-family:var(--font-mono); font-size:12px; color:#6b7378; }
 
-  /* Cards - "pinned flyer" motif */
   .grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:20px; padding:6px 0 10px; }
   .card{
     background:var(--paper); border:1px solid var(--line); border-radius:var(--radius);
@@ -88,7 +83,11 @@
   .tag{ font-family:var(--font-mono); font-size:10.5px; border:1px solid var(--line); border-radius:99px; padding:3px 8px; color:#4a5459; }
   .tag.free{ border-color:var(--teal); color:var(--teal); }
   .card p.desc{ font-size:13.5px; color:#4a5459; margin:0 0 14px; }
-  .card .view{ font-family:var(--font-mono); font-size:12px; font-weight:600; color:var(--ink); text-decoration:none; border-bottom:1px solid var(--ink); padding-bottom:1px;}
+  .card .view{ font-family:var(--font-mono); font-size:12px; font-weight:600; color:var(--ink); text-decoration:none; border-bottom:1px solid var(--ink); padding-bottom:1px; background:none; border-top:none; border-left:none; border-right:none; cursor:pointer; padding-left:0; padding-right:0;}
+  .detail-panel{ margin-top:14px; padding-top:14px; border-top:1px dashed var(--line); }
+  .detail-panel .detail-full{ font-size:13.5px; color:#3a4247; margin:0 0 10px; }
+  .detail-panel .detail-row{ font-size:12.5px; color:#4a5459; margin:0 0 8px; }
+  .detail-panel a.view{ display:inline-block; margin-top:4px; }
 
   .empty{ font-family:var(--font-mono); font-size:13px; color:#6b7378; padding:30px 0; text-align:center; }
 
@@ -172,11 +171,6 @@
 </footer>
 
 <script>
-// ---- Live data: loaded from events.json, produced daily by the Airtable export script ----
-// Expected shape (matches airtable-export-script.js output):
-// { generatedAt: "...", events: [{ id, title, titleEs, desc, date, time, endDate,
-//   venue, city, format, category, language, price, link, family }, ...] }
-
 let EVENTS = [];
 const citySelect = document.getElementById('city-select');
 const catSelect = document.getElementById('cat-select');
@@ -184,20 +178,17 @@ const catSelect = document.getElementById('cat-select');
 let lang = 'es';
 let activeChip = 'all';
 
-// Category values come from Airtable as "English | Español" (e.g. "Music | Música").
-// We derive a stable slug from the English half for CSS class + filter matching.
 function slugify(catStr){
   return (catStr || 'other').split('|')[0].trim().toLowerCase().replace(/[^a-z0-9]+/g,'-') || 'other';
 }
 
-// "This weekend" = the event falls on the next Fri/Sat/Sun within 7 days.
 function isThisWeekend(dateStr){
   if(!dateStr) return false;
   const d = new Date(dateStr+'T00:00:00');
   const today = new Date();
   const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
   const diffDays = Math.round((d - startOfToday) / 86400000);
-  const day = d.getDay(); // 0=Sun ... 5=Fri, 6=Sat
+  const day = d.getDay();
   return (day===5 || day===6 || day===0) && diffDays>=0 && diffDays<=7;
 }
 
@@ -215,16 +206,12 @@ function fmtPriceTag(priceRaw){
   return {es:'De pago', en:'Paid', isFree:false};
 }
 
-// ---- Live data: read directly from Airtable's API (read-only, single-base scoped token) ----
-// This replaced the daily-export-to-GitHub approach, since Airtable's "Run a script"
-// automation action requires a paid Team plan. Reading straight from Airtable on page
-// load needs no automation, no script action, and no GitHub round-trip at all.
 const AIRTABLE_TOKEN = 'patBNq7qkByj9o83x.c71c8a39e2ec3b58a94f0543cd3286674bb978b220591292ebd227476cd0f0ae';
 const BASE_ID = 'appXDZC87lr1GTuNf';
 const EVENTS_TABLE_ID = 'tblgGK0PBwdTFWvcN';
 const CATEGORIES_TABLE_ID = 'tblibW7NPImhl0zQp';
 const ORGANIZERS_TABLE_ID = 'tblQfICSE8waDAdOl';
-const PUBLIC_VIEW_ID = 'viwpX50iaswDJKK4A'; // the "Public data" view: Approved + End date >= today
+const PUBLIC_VIEW_ID = 'viwpX50iaswDJKK4A';
 
 async function airtableFetch(tableId, query){
   const url = `https://api.airtable.com/v0/${BASE_ID}/${tableId}${query || ''}`;
@@ -263,6 +250,8 @@ async function loadEvents(){
         title: f['Event title'] || '',
         titleEs: f['Spanish event title'] || f['Event title'] || '',
         desc: f['Short description'] || '',
+        fullDesc: f['Full description'] || '',
+        accessibility: f['Accessibility information'] || '',
         date,
         venue: f['Venue name'] || '',
         city: f['City'] || '',
@@ -334,6 +323,7 @@ function render(){
     const price = fmtPriceTag(e.price);
     const title = (lang==='es' ? (e.titleEs || e.title) : (e.title || e.titleEs)) || '';
     const location = [e.venue, e.city].filter(Boolean).join(' · ');
+    const fullText = e.fullDesc || e.desc || '';
     card.innerHTML = `
       <div class="date">${fmtDateLabel(e.date)}</div>
       <div class="cat-strip"></div>
@@ -345,8 +335,21 @@ function render(){
         ${e.family ? `<span class="tag">${lang==='es'?'Familiar':'Family'}</span>` : ''}
       </div>
       <p class="desc">${e.desc || ''}</p>
-      <a class="view" href="${e.link || '#'}" target="_blank" rel="noopener">${lang==='es'?'Ver detalles →':'View details →'}</a>
+      <button type="button" class="view details-toggle">${lang==='es'?'Ver detalles →':'View details →'}</button>
+      <div class="detail-panel" hidden>
+        ${fullText ? `<p class="detail-full">${fullText}</p>` : ''}
+        ${e.organizer ? `<p class="detail-row"><strong>${lang==='es'?'Organizador: ':'Organizer: '}</strong>${e.organizer}</p>` : ''}
+        ${e.accessibility ? `<p class="detail-row"><strong>${lang==='es'?'Accesibilidad: ':'Accessibility: '}</strong>${e.accessibility}</p>` : ''}
+        ${e.link ? `<a class="view" href="${e.link}" target="_blank" rel="noopener">${lang==='es'?'Registro / boletos →':'Registration / tickets →'}</a>` : `<p class="detail-row" style="opacity:.6">${lang==='es'?'Sin enlace de registro todavía.':'No registration link yet.'}</p>`}
+      </div>
     `;
+    const toggleBtn = card.querySelector('.details-toggle');
+    const panel = card.querySelector('.detail-panel');
+    toggleBtn.addEventListener('click', () => {
+      const isHidden = panel.hasAttribute('hidden');
+      if (isHidden) { panel.removeAttribute('hidden'); toggleBtn.textContent = lang==='es' ? 'Ocultar detalles ↑' : 'Hide details ↑'; }
+      else { panel.setAttribute('hidden', ''); toggleBtn.textContent = lang==='es' ? 'Ver detalles →' : 'View details →'; }
+    });
     grid.appendChild(card);
   });
 }

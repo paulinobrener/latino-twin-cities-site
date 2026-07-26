@@ -263,7 +263,18 @@ async function loadEvents(){
         link: f['Ticket or registration link'] || '',
         family: !!f['Family-friendly'],
         organizer: organizerName,
-        weekend: isThisWeekend(date)
+        weekend: isThisWeekend(date),
+        startTime: f['Start time'] || '',
+        endDate: f['End date'] || '',
+        streetAddress: f['Street address'] || '',
+        format: f['Event format'] || '',
+        onlineLink: f['Online event link'] || '',
+        website: f['Website'] || '',
+        instagram: f['Instagram'] || '',
+        facebook: f['Facebook'] || '',
+        featuredArtists: f['Featured artists or presenters'] || '',
+        ageRestrictions: f['Age restrictions'] || '',
+        priceAmount: f['Price'] || ''
       };
     });
   } catch(err){
@@ -338,47 +349,13 @@ function render(){
       <button type="button" class="view details-toggle">${lang==='es'?'Ver detalles →':'View details →'}</button>
       <div class="detail-panel" hidden>
         ${fullText ? `<p class="detail-full">${fullText}</p>` : ''}
+        ${e.startTime ? `<p class="detail-row"><strong>${lang==='es'?'Hora: ':'Time: '}</strong>${e.startTime}${e.endDate && e.endDate!==e.date ? ' – '+fmtDateLabel(e.endDate) : ''}</p>` : ''}
+        ${e.streetAddress ? `<p class="detail-row"><strong>${lang==='es'?'Dirección: ':'Address: '}</strong>${e.streetAddress}</p>` : ''}
+        ${e.format ? `<p class="detail-row"><strong>${lang==='es'?'Formato: ':'Format: '}</strong>${e.format}</p>` : ''}
+        ${e.onlineLink ? `<p class="detail-row"><a class="view" href="${e.onlineLink}" target="_blank" rel="noopener">${lang==='es'?'Enlace en línea →':'Online link →'}</a></p>` : ''}
+        ${e.priceAmount ? `<p class="detail-row"><strong>${lang==='es'?'Precio: ':'Price: '}</strong>${e.priceAmount}</p>` : ''}
+        ${e.featuredArtists ? `<p class="detail-row"><strong>${lang==='es'?'Artistas destacados: ':'Featured artists: '}</strong>${e.featuredArtists}</p>` : ''}
         ${e.organizer ? `<p class="detail-row"><strong>${lang==='es'?'Organizador: ':'Organizer: '}</strong>${e.organizer}</p>` : ''}
+        ${e.ageRestrictions ? `<p class="detail-row"><strong>${lang==='es'?'Restricción de edad: ':'Age restrictions: '}</strong>${e.ageRestrictions}</p>` : ''}
         ${e.accessibility ? `<p class="detail-row"><strong>${lang==='es'?'Accesibilidad: ':'Accessibility: '}</strong>${e.accessibility}</p>` : ''}
-        ${e.link ? `<a class="view" href="${e.link}" target="_blank" rel="noopener">${lang==='es'?'Registro / boletos →':'Registration / tickets →'}</a>` : `<p class="detail-row" style="opacity:.6">${lang==='es'?'Sin enlace de registro todavía.':'No registration link yet.'}</p>`}
-      </div>
-    `;
-    const toggleBtn = card.querySelector('.details-toggle');
-    const panel = card.querySelector('.detail-panel');
-    toggleBtn.addEventListener('click', () => {
-      const isHidden = panel.hasAttribute('hidden');
-      if (isHidden) { panel.removeAttribute('hidden'); toggleBtn.textContent = lang==='es' ? 'Ocultar detalles ↑' : 'Hide details ↑'; }
-      else { panel.setAttribute('hidden', ''); toggleBtn.textContent = lang==='es' ? 'Ver detalles →' : 'View details →'; }
-    });
-    grid.appendChild(card);
-  });
-}
-
-document.querySelectorAll('.chip-btn').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    document.querySelectorAll('.chip-btn').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    activeChip = btn.dataset.filter;
-    render();
-  });
-});
-citySelect.addEventListener('change', render);
-catSelect.addEventListener('change', render);
-
-document.getElementById('btn-es').addEventListener('click', ()=>{
-  lang='es'; document.documentElement.lang='es';
-  document.getElementById('btn-es').classList.add('active');
-  document.getElementById('btn-en').classList.remove('active');
-  buildFilterOptions(); render();
-});
-document.getElementById('btn-en').addEventListener('click', ()=>{
-  lang='en'; document.documentElement.lang='en';
-  document.getElementById('btn-en').classList.add('active');
-  document.getElementById('btn-es').classList.remove('active');
-  buildFilterOptions(); render();
-});
-
-loadEvents();
-</script>
-</body>
-</html>
+        ${(e.website || e.instagram || e.facebook) ? `<p class="detail-row">${[e.website?`<a class="view" href="${e.website}" target="_blank" rel="noopener">${lang==='es'?'Sitio web':'Website'}</a>`:
